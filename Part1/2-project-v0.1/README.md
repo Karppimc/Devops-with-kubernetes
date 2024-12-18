@@ -1,4 +1,4 @@
-# Exercise 1.02 and 1.04: Project v0.2
+# Exercise 1.02,1.04,1.05: Project v0.3
 
 ## Description
 This exercise creates a web server that logs "Server started in port NNNN" on startup. The port is configurable using the `PORT` environment variable.
@@ -16,3 +16,9 @@ kubectl get deployments
 kubectl get pods
 
 ```
+
+## Steps in 1.05
+- Modified the application to serve an HTML page.
+- Rebuilt the Docker image (`karppimc/todo-app:1.1`).
+- Updated the Kubernetes deployment to use the new image.
+- Verified accessibility using `kubectl port-forward` and accessed the app in a browser.
