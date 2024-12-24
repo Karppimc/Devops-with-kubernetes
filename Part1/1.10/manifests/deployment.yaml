@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timestamp-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: timestamp-app
+  template:
+    metadata:
+      labels:
+        app: timestamp-app
+    spec:
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+      containers:
+        - name: writer
+          image: karppimc/timestamp-writer:1
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/src/app/files
+        - name: reader
+          image: karppimc/timestamp-reader:1
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/src/app/files
