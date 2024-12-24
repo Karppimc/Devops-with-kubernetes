@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pingpong-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pingpong
+  template:
+    metadata:
+      labels:
+        app: pingpong
+    spec:
+      volumes:
+        - name: shared-storage
+          persistentVolumeClaim:
+            claimName: shared-pvc
+      containers:
+        - name: pingpong
+          image: karppimc/pingpong:2
+          ports:
+            - containerPort: 3002
+          volumeMounts:
+            - mountPath: /usr/src/app/shared
+              name: shared-storage

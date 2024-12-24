@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logoutput
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logoutput
+  template:
+    metadata:
+      labels:
+        app: logoutput
+    spec:
+      volumes:
+        - name: shared-storage
+          persistentVolumeClaim:
+            claimName: shared-pvc
+      containers:
+        - name: logoutput
+          image: karppimc/logoutput:2
+          ports:
+            - containerPort: 3001
+          volumeMounts:
+            - mountPath: /usr/src/app/shared
+              name: shared-storage
