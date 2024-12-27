@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo
+  namespace: default
+  labels:
+    app: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+        - name: todo
+          image: karppimc/todo:6
+          ports:
+            - containerPort: 3006
+          env:
+            - name: PORT
+              value: "3006"
+          volumeMounts:
+            - name: image-storage
+              mountPath: /usr/src/app/images
+            - name: todo-storage
+              mountPath: /usr/src/app/data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3006
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3006
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: image-storage
+          persistentVolumeClaim:
+            claimName: image-pvc
+        - name: todo-storage
+          persistentVolumeClaim:
+            claimName: todo-pvc
