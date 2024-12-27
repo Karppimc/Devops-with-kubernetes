@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pingpong-deployment
+  namespace: app-space
+  labels:
+    app: pingpong
 spec:
   replicas: 1
   selector:
@@ -17,7 +20,4 @@ spec:
           image: karppimc/pingpong:latest
           ports:
             - containerPort: 3002
-          env:
-            - name: PORT
-              value: "3002"
 

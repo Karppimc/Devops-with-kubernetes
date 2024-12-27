@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: logoutput-deployment
+  namespace: app-space
+  labels:
+    app: logoutput
 spec:
   replicas: 1
   selector:
@@ -17,7 +20,5 @@ spec:
           image: karppimc/logoutput:latest
           ports:
             - containerPort: 3001
-          env:
-            - name: PORT
-              value: "3001"
+
 

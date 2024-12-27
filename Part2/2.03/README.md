@@ -1,26 +1,24 @@
-# 📘 Exercise 2.01: Connecting Pods via HTTP
+# 📘 🛠️ What We Did in Exercise 2.03:
+1. Created Namespace: app-space
+2. Moved Applications:
+- Log-output → app-space
+- Ping-pong → app-space
+3. Updated Manifests:
+- Deployment and Service manifests updated with namespace: app-space
+4. Updated Ingress:
+- Properly referenced services in app-space namespace
+5. Tested Endpoints:
+- /log and /pingpong verified via Ingress routing
 
-- Goal: Connect Log-output and Pingpong applications using HTTP endpoints instead of shared volumes.
-
-### 🛠️ Key Commands Used:
-1. Deploy Services and pods
+### Commands
 ```bash
-kubectl apply -f pingpong/manifests/
-kubectl apply -f log-output/manifests/
+kubectl get all -n app-space
 ```
-2. Deploy Ingress:
 ```bash
-kubectl apply -f ingress/ingress.yaml
+kubectl describe ingress app-ingress -n app-space
 ```
-4. Verify Services and Ingress:
 ```bash
-kubectl get svc
-kubectl describe ingress app-ingress
+curl http://<ingress ip>/log
+curl http://<ingress ip>/pingpong
 ```
 
-### Outputs:
-- curl http://172.21.25.41/pingpong
-- {"pongCount":6}
-
-- curl http://172.21.25.41/logs
-- 2024-12-27T17:31:33.358Z: kaqpk. Ping / Pongs: 7
