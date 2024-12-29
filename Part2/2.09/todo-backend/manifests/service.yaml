@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-backend-svc
+  namespace: todo-space
+  labels:
+    app: todo-backend
+spec:
+  selector:
+    app: todo-backend
+  ports:
+    - protocol: TCP
+      port: 3005
+      targetPort: 3005
+  type: ClusterIP
