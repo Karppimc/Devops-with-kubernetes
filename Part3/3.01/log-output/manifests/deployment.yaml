@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logoutput-deployment
+  namespace: app-space
+  labels:
+    app: logoutput
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logoutput
+  template:
+    metadata:
+      labels:
+        app: logoutput
+    spec:
+      containers:
+        - name: logoutput
+          image: karppimc/logoutput:latest
+          ports:
+            - containerPort: 3001
+          env:
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: logoutput-config
+                  key: MESSAGE
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/src/app/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: logoutput-config
+            items:
+              - key: information.txt
+                path: information.txt
