@@ -63,6 +63,13 @@ jobs:
           sudo mv sops /usr/local/bin/sops
           sops --version
 
+      ## ✅ Add Age Key to Runner
+      - name: Add Age Key for SOPS Decryption
+        run: |
+          mkdir -p ~/.config/sops/age
+          echo "${{ secrets.AGE_SECRET_KEY }}" > ~/.config/sops/age/keys.txt
+          chmod 600 ~/.config/sops/age/keys.txt
+
       ## ✅ Decrypt Kubernetes Secrets for Database
       - name: Decrypt Database Secrets
         run: |
@@ -99,38 +106,15 @@ jobs:
           kustomize edit set image PROJECT/IMAGE=gcr.io/$PROJECT_ID/$IMAGE_TODO_APP:$BRANCH-${{ github.sha }}
           kustomize build . | kubectl apply -f -
 
-      ### 🚀 Deploy Todo Backend
-      - name: Deploy Todo Backend
-        run: |
-          cd Part3/3.03/todo-backend/manifests
-          kustomize edit set image PROJECT/IMAGE=gcr.io/$PROJECT_ID/$IMAGE_TODO_BACKEND:$BRANCH-${{ github.sha }}
-          kustomize build . | kubectl apply -f -
-
-      ### 🚀 Deploy CronJobs
-      - name: Deploy CronJobs
-        run: |
-          cd Part3/3.03/cronjobs
-          kustomize edit set image PROJECT/IMAGE=gcr.io/$PROJECT_ID/$IMAGE_CRONJOB:$BRANCH-${{ github.sha }}
-          kustomize build . | kubectl apply -f -
-
       ### 🚀 Deploy Database
       - name: Deploy Database
         run: |
           cd Part3/3.03/database/manifests
           kustomize build . | kubectl apply -f -
 
-      ### 🚀 Deploy Ingress
-      - name: Deploy Ingress
-        run: |
-          cd Part3/3.03/ingress
-          kustomize build . | kubectl apply -f -
-
       ## ✅ Verify Deployment
       - name: Verify Deployments
         run: |
           kubectl rollout status deployment/todo -n todo-space
-          kubectl rollout status deployment/todo-backend-deployment -n todo-space
-          kubectl get cronjobs -n todo-space
+          kubectl get secrets -n todo-space
           kubectl get statefulsets -n todo-space
-          kubectl get ingress -n todo-space
-          kubectl get services -n todo-space -o wide
