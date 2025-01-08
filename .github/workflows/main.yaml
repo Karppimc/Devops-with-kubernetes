@@ -55,10 +55,13 @@ jobs:
         run: |
           kubectl get namespace todo-space || kubectl create namespace todo-space
 
-      ## ✅ Install SOPS for Secrets Decryption
+      ## ✅ Install SOPS from GitHub Releases
       - name: Install SOPS
         run: |
-          sudo apt-get update && sudo apt-get install -y sops
+          wget https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64 -O sops
+          chmod +x sops
+          sudo mv sops /usr/local/bin/sops
+          sops --version
 
       ## ✅ Decrypt Kubernetes Secrets for Database
       - name: Decrypt Database Secrets
