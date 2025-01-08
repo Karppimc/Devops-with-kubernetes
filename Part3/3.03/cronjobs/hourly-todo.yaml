@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hourly-todo
+  namespace: todo-space
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: todo-cron
+            image: karppimc/cronjob-todo:latest
+            command:
+              - /bin/bash
+              - -c
+              - |
+                RANDOM_ARTICLE_URL=$(curl -s -o /dev/null -w "%{redirect_url}" https://en.wikipedia.org/wiki/Special:Random)
+                curl -X POST "$TODO_BACKEND_URL/todos" \
+                -H "Content-Type: application/json" \
+                -d "{\"task\": \"Read $RANDOM_ARTICLE_URL\"}"
+            env:
+              - name: TODO_BACKEND_URL
+                value: "http://todo-backend-svc.todo-space.svc.cluster.local:3005"
+          restartPolicy: OnFailure
