@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - '**' # Include all branches for separate environments
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
@@ -53,7 +54,13 @@ jobs:
       ## ✅ Ensure Namespace Exists
       - name: Ensure Namespace Exists
         run: |
-          kubectl get namespace todo-space || kubectl create namespace todo-space
+          if [[ "$BRANCH" == "main" ]]; then
+            NAMESPACE=todo-space
+          else
+            NAMESPACE=${GITHUB_REF#refs/heads/}
+          fi
+          kubectl create namespace $NAMESPACE || true
+          kubectl config set-context --current --namespace=$NAMESPACE
 
       ## ✅ Install SOPS from GitHub Releases
       - name: Install SOPS
@@ -103,6 +110,7 @@ jobs:
       - name: Deploy Todo App
         run: |
           cd Part3/3.03/todo-app/manifests
+          kustomize edit set namespace $NAMESPACE
           kustomize edit set image PROJECT/IMAGE=gcr.io/$PROJECT_ID/$IMAGE_TODO_APP:$BRANCH-${{ github.sha }}
           kustomize build . | kubectl apply -f -
 
@@ -110,11 +118,13 @@ jobs:
       - name: Deploy Database
         run: |
           cd Part3/3.03/database/manifests
+          kustomize edit set namespace $NAMESPACE
           kustomize build . | kubectl apply -f -
 
       ## ✅ Verify Deployment
       - name: Verify Deployments
         run: |
-          kubectl rollout status deployment/todo -n todo-space
-          kubectl get secrets -n todo-space
-          kubectl get statefulsets -n todo-space
+          kubectl rollout status deployment/todo -n $NAMESPACE
+          kubectl get secrets -n $NAMESPACE
+          kubectl get statefulsets -n $NAMESPACE
+          kubectl get services -n $NAMESPACE -o wide
