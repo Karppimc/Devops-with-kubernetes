@@ -50,6 +50,11 @@ jobs:
         run: |
           gcloud auth configure-docker gcr.io --quiet
 
+      ## ✅ Ensure Namespace Exists
+      - name: Ensure Namespace Exists
+        run: |
+          kubectl get namespace todo-space || kubectl create namespace todo-space
+
       ## ✅ Build and Push Docker Images
 
       ### 🚀 Build and Push Todo App Image
