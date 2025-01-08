@@ -55,6 +55,16 @@ jobs:
         run: |
           kubectl get namespace todo-space || kubectl create namespace todo-space
 
+      ## ✅ Install SOPS for Secrets Decryption
+      - name: Install SOPS
+        run: |
+          sudo apt-get update && sudo apt-get install -y sops
+
+      ## ✅ Decrypt Kubernetes Secrets for Database
+      - name: Decrypt Database Secrets
+        run: |
+          sops --decrypt Part3/3.03/database/manifests/secret.enc.yaml > Part3/3.03/database/manifests/secret.yaml
+
       ## ✅ Build and Push Docker Images
 
       ### 🚀 Build and Push Todo App Image
