@@ -1,0 +1,109 @@
+name: CI/CD Pipeline for Todo Project
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: dwk-cluster
+  GKE_ZONE: europe-north1-b
+  IMAGE_TODO_APP: karppimc/todo
+  IMAGE_TODO_BACKEND: karppimc/todo-backend
+  IMAGE_CRONJOB: karppimc/cronjob-todo
+  BRANCH: ${{ github.ref_name }}
+
+jobs:
+  build-publish-deploy:
+    name: Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      ## ✅ Checkout Code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      ## ✅ Authenticate with Google Cloud
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GKE_SA_KEY }}'
+
+      - name: Set Up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: '${{ env.GKE_CLUSTER }}'
+          project_id: '${{ env.PROJECT_ID }}'
+          location: '${{ env.GKE_ZONE }}'
+
+      ## ✅ Build and Push Docker Images
+      - name: Configure Docker
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build and Push Todo App Image
+        run: |
+          docker build Part3/3.03/todo-app -t gcr.io/$PROJECT_ID/$IMAGE_TODO_APP:$BRANCH-${{ github.sha }}
+          docker push gcr.io/$PROJECT_ID/$IMAGE_TODO_APP:$BRANCH-${{ github.sha }}
+
+      - name: Build and Push Todo Backend Image
+        run: |
+          docker build Part3/3.03/todo-backend -t gcr.io/$PROJECT_ID/$IMAGE_TODO_BACKEND:$BRANCH-${{ github.sha }}
+          docker push gcr.io/$PROJECT_ID/$IMAGE_TODO_BACKEND:$BRANCH-${{ github.sha }}
+
+      - name: Build and Push CronJob Image
+        run: |
+          docker build Part3/3.03/cronjobs -t gcr.io/$PROJECT_ID/$IMAGE_CRONJOB:$BRANCH-${{ github.sha }}
+          docker push gcr.io/$PROJECT_ID/$IMAGE_CRONJOB:$BRANCH-${{ github.sha }}
+
+      ## ✅ Deploy with Kustomize
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2.1.0
+
+      ### 🚀 Deploy Todo App
+      - name: Deploy Todo App
+        run: |
+          cd Part3/3.03/todo-app/manifests
+          kustomize edit set image PROJECT/IMAGE=gcr.io/$PROJECT_ID/$IMAGE_TODO_APP:$BRANCH-${{ github.sha }}
+          kustomize build . | kubectl apply -f -
+
+      ### 🚀 Deploy Todo Backend
+      - name: Deploy Todo Backend
+        run: |
+          cd Part3/3.03/todo-backend/manifests
+          kustomize edit set image PROJECT/IMAGE=gcr.io/$PROJECT_ID/$IMAGE_TODO_BACKEND:$BRANCH-${{ github.sha }}
+          kustomize build . | kubectl apply -f -
+
+      ### 🚀 Deploy CronJobs
+      - name: Deploy CronJobs
+        run: |
+          cd Part3/3.03/cronjobs
+          kustomize edit set image PROJECT/IMAGE=gcr.io/$PROJECT_ID/$IMAGE_CRONJOB:$BRANCH-${{ github.sha }}
+          kustomize build . | kubectl apply -f -
+
+      ### 🚀 Deploy Database
+      - name: Deploy Database
+        run: |
+          cd Part3/3.03/database/manifests
+          kubectl apply -f statefulset.yaml
+          kubectl apply -f service.yaml
+          kubectl apply -f secret.enc.yaml
+
+      ### 🚀 Deploy Ingress
+      - name: Deploy Ingress
+        run: |
+          cd Part3/3.03/ingress
+          kubectl apply -f ingress.yaml
+
+      ## ✅ Verify Deployment
+      - name: Verify Deployments
+        run: |
+          kubectl rollout status deployment/todo -n todo-space
+          kubectl rollout status deployment/todo-backend-deployment -n todo-space
+          kubectl get cronjobs -n todo-space
+          kubectl get statefulset -n todo-space
+          kubectl get ingress -n todo-space
+          kubectl get services -n todo-space -o wide
