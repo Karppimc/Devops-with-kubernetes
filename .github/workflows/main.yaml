@@ -45,6 +45,11 @@ jobs:
         run: |
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+       - name: Authenticate Docker with Google Artifact Registry
+          run: |
+            gcloud auth configure-docker gcr.io --quiet
+
+
       ## ✅ Build and Push Docker Images
       - name: Build and Push Todo App Image
         run: |
