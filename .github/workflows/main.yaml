@@ -40,10 +40,12 @@ jobs:
           project_id: '${{ env.PROJECT_ID }}'
           location: '${{ env.GKE_ZONE }}'
 
-      ## ✅ Build and Push Docker Images
-      - name: Configure Docker
-        run: gcloud auth configure-docker --quiet
+      ## ✅ Authenticate with Docker Hub
+      - name: Docker Hub Authentication
+        run: |
+          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+      ## ✅ Build and Push Docker Images
       - name: Build and Push Todo App Image
         run: |
           docker build Part3/3.03/todo-app -t gcr.io/$PROJECT_ID/$IMAGE_TODO_APP:$BRANCH-${{ github.sha }}
