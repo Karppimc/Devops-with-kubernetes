@@ -88,15 +88,13 @@ jobs:
       - name: Deploy Database
         run: |
           cd Part3/3.03/database/manifests
-          kubectl apply -f statefulset.yaml
-          kubectl apply -f service.yaml
-          kubectl apply -f secret.enc.yaml
+          kustomize build . | kubectl apply -f -
 
       ### 🚀 Deploy Ingress
       - name: Deploy Ingress
         run: |
           cd Part3/3.03/ingress
-          kubectl apply -f ingress.yaml
+          kustomize build . | kubectl apply -f -
 
       ## ✅ Verify Deployment
       - name: Verify Deployments
