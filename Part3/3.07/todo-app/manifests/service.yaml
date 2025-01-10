@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-service
+  namespace: todo-space
+spec:
+  type: ClusterIP
+  selector:
+    app: todo
+  ports:
+    - port: 3006
+      targetPort: 3006
