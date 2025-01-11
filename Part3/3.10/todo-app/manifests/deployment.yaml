@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo
+  namespace: todo-space
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+        - name: todo
+          image: karppimc/todo-service:latest
+          ports:
+            - containerPort: 3006
+          env:
+            - name: PORT
+              value: "3006"
+            - name: BASE_URL
+              value: http://34.88.124.122/api  # Ingress hostname or external IP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: image-storage
+              mountPath: /usr/src/app/images
+            - name: todo-storage
+              mountPath: /usr/src/app/data
+          resources:
+            limits:
+              cpu: "200m"       # Limit to 20% of a CPU core
+              memory: "128Mi"   # Limit to 128MB memory
+            requests:
+              cpu: "100m"       # Request 10% of a CPU core
+              memory: "64Mi"    # Request 64MB memory
+      volumes:
+        - name: image-storage
+          persistentVolumeClaim:
+            claimName: image-pvc
+        - name: todo-storage
+          persistentVolumeClaim:
+            claimName: todo-pvc
