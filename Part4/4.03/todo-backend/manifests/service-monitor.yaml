@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: todo-backend-monitor
+  namespace: todo-space
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: todo-backend
+  endpoints:
+    - port: http    # Changed from "3005" to "http"
+      path: /metrics
+      interval: 15s
+  namespaceSelector:
+    matchNames:
+      - todo-space

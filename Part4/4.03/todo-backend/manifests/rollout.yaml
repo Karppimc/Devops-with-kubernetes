@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: todo-backend-rollout
+  namespace: todo-space
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: todo-backend
+  strategy:
+    canary:
+      steps:
+      - setWeight: 25
+      - pause:
+          duration: 30s
+      - setWeight: 50
+      - pause:
+          duration: 30s
+  template:
+    metadata:
+      labels:
+        app: todo-backend
+    spec:
+      containers:
+      - name: todo-backend
+        image: karppimc/todo-backend:latest
+        ports:
+        - containerPort: 3005
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: todo-db-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: todo-db-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: todo-db-secret
+              key: POSTGRES_DB
+        - name: POSTGRES_HOST
+          value: todo-db-0.todo-db-svc
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3005
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 3005
+          initialDelaySeconds: 20
+          periodSeconds: 5
