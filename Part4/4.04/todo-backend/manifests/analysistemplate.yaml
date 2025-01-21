@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  namespace: todo-space
+  name: cpu-usage-rate
+spec:
+  metrics:
+  - name: cpu-usage-rate
+    initialDelay: 3m
+    interval: 20s
+    count: 30
+    successCondition: result <= 50
+    failureCondition: result > 50  
+    provider:
+      prometheus:
+        address: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        query: |
+          scalar(sum(rate(container_cpu_usage_seconds_total{namespace="todo-space"}[1m])))*1000  # in milliCPU
