@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
-metadata:
-  annotations:
-    force-redeploy: "true"  # This change will trigger a re-sync without changing the image version
+images:
+  - name: karppimc/pingpong
+    newTag: latest 
