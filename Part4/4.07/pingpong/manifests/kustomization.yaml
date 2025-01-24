@@ -5,4 +5,4 @@ resources:
   - service.yaml
 images:
   - name: karppimc/pingpong
-    newTag: "4.01"
+    newTag: argo123
