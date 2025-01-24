@@ -5,4 +5,4 @@ resources:
   - service.yaml
 images:
   - name: karppimc/pingpong
-    newTag: latest 
+    newTag: 4.01
