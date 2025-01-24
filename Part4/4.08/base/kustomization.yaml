@@ -1,0 +1,11 @@
+resources:
+  - todo-app/deployment.yaml
+  - todo-backend/deployment.yaml
+
+namePrefix: todo-app-
+
+images:
+  - name: karppimc/todo-app
+    newTag: latest
+  - name: karppimc/todo-backend
+    newTag: latest

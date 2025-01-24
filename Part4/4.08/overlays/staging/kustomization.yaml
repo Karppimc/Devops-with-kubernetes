@@ -1,0 +1,12 @@
+resources:
+  - ../../base
+
+namespace: todo-space-staging
+
+namePrefix: staging-
+
+images:
+  - name: karppimc/todo-app
+    newTag: latest
+  - name: karppimc/todo-backend
+    newTag: latest

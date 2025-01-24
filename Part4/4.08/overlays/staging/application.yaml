@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todo-app-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Karppimc/Devops-with-kubernetes
+    path: Part4/4.08/overlays/staging
+    targetRevision: HEAD
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: todo-space-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
