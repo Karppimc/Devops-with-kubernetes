@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo-backend-deployment
-  namespace: todo-space-staging  # Staging namespace
+  namespace:
   labels:
     app: todo-backend
 spec:
@@ -40,19 +40,21 @@ spec:
               value: "todo-db-svc"
           resources:
             limits:
-              cpu: "250m"
+              cpu: "200m"
               memory: "256Mi"
             requests:
-              cpu: "150m"
+              cpu: "100m"
               memory: "128Mi"
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 3005
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          livenessProbe:
-            tcpSocket:
-              port: 3005
-            initialDelaySeconds: 20
-            periodSeconds: 10
+          #readinessProbe:
+           # httpGet:
+            #  path: /healthz
+             # port: 3005
+            #initialDelaySeconds: 10
+            #periodSeconds: 5
+            #failureThreshold: 3
+            #successThreshold: 1
+          #livenessProbe:
+           # tcpSocket:
+            #  port: 3005
+            #initialDelaySeconds: 20
+            #periodSeconds: 10
