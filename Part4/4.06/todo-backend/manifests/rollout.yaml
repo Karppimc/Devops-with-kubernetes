@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  namespace: todo-space
+  name: todo-backend-rollout
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: todo-backend
+  strategy:
+    canary:
+      steps:
+        - setWeight: 25
+        - pause:
+            duration: 30s
+        - setWeight: 50
+        - pause:
+            duration: 30s
+        - analysis:
+            templates:
+              - templateName: cpu-usage-rate
+  template:
+    metadata:
+      labels:
+        app: todo-backend
+    spec:
+      containers:
+        - name: todo-backend
+          image: karppimc/todo-backend:latest
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-backend-config
+                  key: PORT
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: todo-db-secret 
+                  key: POSTGRES_DB  # Correct the key reference to match the secret's key
+          readinessProbe:
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            exec:
+              command:
+              - sh
+              - -c
+              - wget --spider -S "http://0.0.0.0:$PORT/healthz" 2>&1 | grep "HTTP/" | awk '{print $2}'
+          livenessProbe:
+            initialDelaySeconds: 300
+            periodSeconds: 5
+            exec:
+              command:
+              - sh
+              - -c
+              - wget --spider -S "http://0.0.0.0:$PORT/healthz" 2>&1 | grep "HTTP/" | awk '{print $2}'
